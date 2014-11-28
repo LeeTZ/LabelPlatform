@@ -13,6 +13,8 @@ db.on('error', console.error.bind(console, 'connection error!'));
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var register = require('./routes/register');
+var login = require('./routes/login');
+var askImage = require('./routes/askImage');
 
 var app = express();
 
@@ -31,7 +33,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 app.use('/register', register);
-
+app.use('/login', login);
+app.use('/askImage', askImage);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

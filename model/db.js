@@ -12,37 +12,52 @@ var UserSchema = new Schema({
 
 UserSchema.methods.Register = function(callback){
 	console.log(this.userName);
+	var that = this;
 	this.model('User').findOne({userName:this.userName}, function(err, kitten){
 		if(err){
-			callback(err);
+			callback(0, err);
 		}
 		if(kitten){
-			console.log(kitten);
+		
+			callback(0, "username has been registered.");
 		}
 		else
 		{
 			console.log(this);
-			this.save(callback);
+			that.save(function(err){
+				if(err){
+					callback(0, "save user error.");
+				}
+				callback(1, "register user success.");
+			});
 			
 
 		}
+	});
+}
 
+UserSchema.methods.Login = function(callback){
+	var that = this;
+	this.model('User').findOne({userName:that.userName}, function(err, kitten){
+		if(err){
+			callback(0, err);
+		}
+		if(kitten){
+			if(kitten.password === that.password){
+				callback(1, kitten);
+			}
+			else{
+				callback(0, 'password error.');
+			}
 
-
+		}
+		else
+		{
+			callback(0, 'user doesn\'t exist.');
+		}
 	});
 }
 mongoose.model('User', UserSchema);
-UserSchema.methods.Login = function(name, pass, callback){
-	this.findOne({userName:name}, function(err, kitten){
-		if(err){
-			callback(err);
-		}
-		if(kitten){
-			Console.log(kitten);
-		}
-	});
-}
-
 
 
 
@@ -63,10 +78,78 @@ var PicSchema = new Schema({
 	labelShoulderTime:{type:Date},
 	validateUser:String,
 	validateTime:{type:Date},
-	status:Number,
+	status:Number,/*status=0, Unlabeled, status = 1, Distributed, status=2, Finished, status = 3, Rejected.*/
 	expireTime:{type:Date}
 
 });
+
+PicSchema.statics.AskImage= function(num, expiredtime, callback){
+    var dateNow = new Date(Date.now());
+    console.log(dateNow);
+	var query = this.where({status:1}).where('expireTime').lte(dateNow);
+	//query.setOptions({overwrite:true});
+    var that = this;
+    /*query.exec(function(err, list){
+       console.log(list.length);
+    });*/
+	this.update(query,{status:0}, {multi:true},function(err, result){
+		if(err){
+			callback(0, 'update query error.');
+		
+		}
+		else{
+			that.where({status:0}).limit(num).exec(function(err, imagelist){
+
+				if(err){
+					console.log(err);
+					callback(0, 'select image error.');
+
+				}
+				else
+				{
+					var time = new Date(Date.now());
+					time.setMinutes(time.getMinutes() + expiredtime);
+                    var Count = imagelist.length;
+                    var index = 0;
+                    var saveImage = function(){
+                        item = imagelist[index];
+                        item.expireTime = time;
+                        console.log(time);
+                        item.status = 1;
+                        index ++;
+                        item.save(function(err){
+                            if(err){
+                                callback(0, 'update pic status error.');
+                            }
+                            else{
+                                if(index < Count)
+                                {
+                                    saveImage();
+                                }
+                                else
+                                {
+                                    callback(1, imagelist);
+                                }
+                            }
+
+                        })
+
+                    };
+                    saveImage();
+
+					
+				}
+
+			});
+		}
+
+
+	});
+	 
+
+
+};
+
 var Pic = mongoose.model('Pic', PicSchema);
 var ResultSchema = new Schema({
 	expId:String,
@@ -115,6 +198,8 @@ var LabelSchema = new Schema({
 	shoulderType:Boolean,
 	valid:Boolean
 });
+
+
 var Label = mongoose.model('Label', LabelSchema);
 
 
