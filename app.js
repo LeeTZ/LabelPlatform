@@ -18,6 +18,8 @@ var askImage = require('./routes/askImage');
 var label = require('./routes/label');
 var filter = require('./routes/filter');
 var calculate = require('./routes/calculate');
+var askValidate = require('./routes/askValidate');
+var validateImg = require('./routes/validate');
 var app = express();
 
 // view engine setup
@@ -41,6 +43,8 @@ app.use('/label', label);
 app.use('/filter', filter);
 app.use('/calculate', calculate);
 app.use('/Image', express.static(path.join(__dirname,'Image')));
+app.use('/askValidate', askValidate);
+app.use('/validate', validateImg);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

@@ -92,7 +92,7 @@ UserSchema.statics.Calculate = function(callback){
 								return;
 							}
 							userObject["labelShoulderCount"] = count;
-							user.model('Label').count({'validateUser':user.userName}, function(err, count){
+							user.model('Pic').count({'validateUser':user.userName}, function(err, count){
 								if(err){
 									callback(0, err);
 									return;
@@ -144,7 +144,7 @@ var PicSchema = new Schema({
 	labelShoulderTime:{type:Date},
 	validateUser:String,
 	validateTime:{type:Date},
-	status:Number,/*status=0, Unlabeled, status = 1, Distributed, status=2, Finished, status = 3, Rejected.*/
+	status:Number,/*status=0, Unlabeled, status = 1, Distributed, status=2, LabelButNoValidate, status = 3, LabelAndDistrubuted, status = 4, labelAndAccept, status = 5, labelButRejected.*/
 	expireTime:{type:Date}
 
 });
@@ -214,12 +214,205 @@ PicSchema.statics.AskImage= function(num, expiredtime, callback){
 	 
 
 
-};
+}
 
+PicSchema.statics.AskForValidate = function(num, expiredtime, callback){
+	var dateNow = new Date(Date.now());
+    console.log(dateNow);
+	var query = this.where({status:3}).where('expireTime').lte(dateNow);
+	//query.setOptions({overwrite:true});
+    var that = this;
+    /*query.exec(function(err, list){
+       console.log(list.length);
+    });*/
+	this.update(query,{status:2}, {multi:true},function(err, result){
+		if(err){
+			callback(0, 'update query error.');
+		
+		}
+		else{
+			that.where({status:2}).limit(num).exec(function(err, imagelist){
+
+				if(err){
+					console.log(err);
+					callback(0, 'select image error.');
+
+				}
+				else
+				{
+					var time = new Date(Date.now());
+					time.setMinutes(time.getMinutes() + expiredtime);
+                    var Count = imagelist.length;
+                    var index = 0;
+                    var returnArray = new Array();
+                    var saveAndInsertLabelImage = function(){
+                        var item = imagelist[index];
+                        item.expireTime = time;
+                        console.log(time);
+                        item.status = 3;
+                        var obj = item._doc;
+                                                index ++;
+                        item.save(function(err){
+                            if(err){
+                                callback(0, 'update pic status error.');
+                            }
+                            else{
+                            	item.model("Label").findOne({picId:item.id}, function(err, kitten){
+                        			if(err){
+                        				callback(0, err);
+                        				return;
+                        			}
+                        			if(kitten){
+                        				obj["label"] = kitten._doc;
+                                        returnArray.push(obj);
+                        			}
+                        			if(index < Count)
+                                	{
+                                    	saveAndInsertLabelImage();
+                                	}
+		                            else
+		                            {
+		                                callback(1, returnArray);
+		                            }
+                   						
+
+                        	});
+
+                                
+                            }
+
+                        })
+
+                    };
+                    saveAndInsertLabelImage();
+
+					
+				}
+
+			});
+		}
+
+
+	});
+}
+
+PicSchema.statics.Validate = function(picId, username,validated, callback){
+	var that = this;
+	this.findById(picId, function(err, kitten){
+		if(err){
+			callback(0, err);
+			return;
+		}
+		if(kitten){
+			var dateNow = new Date(Date.now());
+			if(kitten.expireTime < dateNow){
+				callback(0, "validate time expired.")
+				return;
+			}
+			else
+			{
+				if(validated === true){
+					kitten.status = 4;
+				}
+				else
+				{
+					kitten.status = 5;
+				}
+				kitten.validateUser = username;
+				kitten.validateTime = Date.now();
+				kitten.save(function(err){
+					if(err){
+						callback(0, err);
+						return;
+					}
+					else
+					{
+						callback(1, kitten);
+					}
+				});
+			}
+		}
+	});
+
+}
+PicSchema.statics.Filter= function(type, callback){
+    var dateNow = new Date(Date.now());
+	var query = this.where({status:1}).where('expireTime').lte(dateNow);
+	//query.setOptions({overwrite:true});
+    var that = this;
+    /*query.exec(function(err, list){
+       console.log(list.length);
+    });*/
+	this.update(query,{status:0}, {multi:true},function(err, result){
+		if(err){
+			callback(0, err);
+			return;
+		}
+		var queryValidate = that.where({status:3}).where('expireTime').lte(dateNow);
+		that.update(queryValidate, {status:2}, function(err, validateList){
+			if(err){
+				callback(0, err);
+				return;
+			}
+			var queryImage = that.where({status:type});
+			queryImage.exec(function(err, imgList){
+			if(err){
+				callback(0, err);
+				return;
+			}
+			if(type< 2){
+				callback(1, imgList);
+			}
+			else
+			{
+				var index = 0;
+				var count = imgList.length;
+				var returnList = new Array();
+				var AddLabel = function(){
+					if(index < count){
+						var img = imgList[index];
+						var obj = img._doc;
+						img.model("Label").findOne({picId: img.id}, function(err, kitten){
+							if(err){
+								callback(0, err);
+								return;
+							}
+							if(kitten){
+								obj["label"] = kitten._doc;
+								returnList.push(obj);
+
+							}
+							index ++;
+							AddLabel();
+						});
+
+
+					}
+					else
+					{
+						callback(1, returnList);
+
+					}
+
+				}
+				AddLabel();
+
+
+			}
+
+
+		});
+
+		});
+		
+
+	});
+
+}
 var Pic = mongoose.model('Pic', PicSchema);
 var ResultSchema = new Schema({
 	expId:String,
-	epoches:Number,
+	epoch:Number,
 	trainRate:Number,
 	testRate:Number
 });
@@ -272,7 +465,14 @@ LabelSchema.methods.LabelPicture = function(callback){
 			callback(0, err);
 			return;
 		}
+		
+		
         if(picture) {
+        	var dateNow = new Date(Date.now());
+        	if(picture.expireTime < dateNow|| picture.status != 1){
+        		callback(0, "picture status error or you upload is expired.");
+                return;
+        	}
             that.model('Label').findOne({picId: that.picId}, function (err, label) {
                 if (err) {
                     callback(0, err);
@@ -313,6 +513,7 @@ LabelSchema.methods.LabelPicture = function(callback){
                             callback(0, err);
                             return;
                         }
+                        picture.status = 2;
                         picture.save(function (err, picture) {
                             if (err) {
                                 callback(0, err);
