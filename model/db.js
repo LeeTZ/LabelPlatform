@@ -57,6 +57,72 @@ UserSchema.methods.Login = function(callback){
 		}
 	});
 }
+
+UserSchema.statics.Calculate = function(callback){
+	var that = this;
+    var query = that.where({'expired':false});
+    var userArray = new Array();
+	query.exec(function(err, userList){
+		if(err){
+			callback(0, err);
+			return;
+		}
+		var index = 0;
+		var count = userList.length;
+		var calculate = function(){
+			if(index < count)
+			{
+				var user = userList[index];
+                var userObject = user._doc;
+				user.model('Pic').count({'createUser':user.userName}, function(err, count){
+					if(err){
+						callback(0, err);
+						return;
+					}
+					userObject["createImageCount"] = count;
+					user.model('Pic').count({'labelPointUser': user.userName}, function(err, count){
+						if(err){
+							callback(0, err);
+							return;
+						}
+						userObject["labelPointCount"] = count;
+						user.model('Pic').count({'labelShoulderUser':user.userName}, function(err, count){
+							if(err){
+								callback(0, err);
+								return;
+							}
+							userObject["labelShoulderCount"] = count;
+							user.model('Label').count({'validateUser':user.userName}, function(err, count){
+								if(err){
+									callback(0, err);
+									return;
+								}
+								userObject["validateCount"] = count;
+                                index ++;
+                                userArray.push(userObject);
+                                calculate();
+							});
+
+						});
+					});
+				});
+
+
+			
+			}
+			else
+			{
+				callback(1, userArray);
+				return;
+			}
+
+		}
+        calculate();
+
+
+	});
+
+}
 mongoose.model('User', UserSchema);
 
 
@@ -169,7 +235,7 @@ var ExpSchema = new Schema({
 	picNum:Number,
 	epochs:Number,
 	learningRate:Number,
-	minLearningRate:Number,
+	minLearningRate:Number
 	//remain to compeleted.
 
 });
@@ -177,7 +243,7 @@ var Exp = mongoose.model('Exp', ExpSchema);
 var LabelSchema = new Schema({
 	picId:String,
 	labelType:String,
-	labelerId:String,
+	labeler:String,
 	leftShoulderX:Number,
 	leftShoulderY:Number,
 	leftMiddleShoulderX:Number,
@@ -199,6 +265,123 @@ var LabelSchema = new Schema({
 	valid:Boolean
 });
 
+LabelSchema.methods.LabelPicture = function(callback){
+	var that = this;
+	that.model('Pic').findById(that.picId, function(err, picture){
+		if(err){
+			callback(0, err);
+			return;
+		}
+        if(picture) {
+            that.model('Label').findOne({picId: that.picId}, function (err, label) {
+                if (err) {
+                    callback(0, err);
+                    return;
+                }
+
+                if (label) {
+                    var keys = ["leftShoulderX", "leftShoulderY", "leftMiddleShoulderX", "leftMiddleShoulderY", "leftNeckY", "leftNeckX", "rightShoulderX", "rightShoulderY", "rightMiddleShoulderX", "rightMiddleShoulderY", "rightNeckX", "rightNeckY", "labeler"];
+                    var isContainAllKeys = true;
+                    for (var type in keys) {
+                        if (that[keys[type]] === undefined) {
+                            isContainAllKeys = false;
+                            break;
+                        }
+                    }
+                    if (isContainAllKeys) {
+                        for (var type in keys) {
+                            label[keys[type]] = that[keys[type]];
+                        }
+                        picture.labelPointUser = that["labeler"];
+                        picture.labelPointTime = Date.now();
+
+
+                    }
+                    if (that['position'] !== undefined) {
+                        label['position'] = that['position'];
+                        picture.labelPosUser = that["labeler"];
+                        picture.labelPosTime = Date.now();
+                    }
+                    if (that['shoulderType'] !== undefined) {
+                        label['shoulderType'] == that['shoulderType'];
+                        picture.labelShoulderUser = that["labeler"];
+                        picture.labelShoulderTime = Date.now();
+                    }
+                    label['valid'] = true;
+                    label.save(function (err, label) {
+                        if (err) {
+                            callback(0, err);
+                            return;
+                        }
+                        picture.save(function (err, picture) {
+                            if (err) {
+                                callback(0, err);
+                                return;
+                            }
+                            callback(1, label);
+
+                        });
+
+                    });
+
+
+                }
+                else {
+                    var Label = that.model('Label');
+                    label = new Label();
+                    label['valid'] = true;
+                    label['picId'] = that.picId;
+                    var keys = ["leftShoulderX", "leftShoulderY", "leftMiddleShoulderX", "leftMiddleShoulderY", "leftNeckY", "leftNeckX", "rightShoulderX", "rightShoulderY", "rightMiddleShoulderX", "rightMiddleShoulderY", "rightNeckX", "rightNeckY", "labeler", "labelType"];
+                    var isContainAllKeys = true;
+                    for (var type in keys) {
+                        if (that[keys[type]] === undefined) {
+                            isContainAllKeys = false;
+                            break;
+                        }
+                    }
+                    if (isContainAllKeys) {
+                        for (var type in keys) {
+                            label[keys[type]] = that[keys[type]];
+                        }
+                        picture.labelPointUser = that["labeler"];
+                        picture.labelPointTime = Date.now();
+
+
+                    }
+                    if (that['position'] !== undefined) {
+                        label['position'] = that['position'];
+                        picture.labelPosUser = that["labeler"];
+                        picture.labelPosTime = Date.now();
+                    }
+                    if (that['shoulderType'] !== undefined) {
+                        label['shoulderType'] == that['shoulderType'];
+                        picture.labelShoulderUser = that["labeler"];
+                        picture.labelShoulderTime = Date.now();
+                    }
+                    label.save(function (err, label) {
+                        if (err) {
+                            callback(0, err);
+                            return;
+                        }
+                        picture.save(function (err, picture) {
+                            if (err) {
+                                callback(0, err);
+                                return;
+                            }
+                            callback(1, label);
+
+                        });
+
+                    });
+                }
+
+            });
+        }
+
+	});
+
+
+}
 
 var Label = mongoose.model('Label', LabelSchema);
 

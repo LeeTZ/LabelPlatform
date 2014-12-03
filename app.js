@@ -15,7 +15,9 @@ var users = require('./routes/users');
 var register = require('./routes/register');
 var login = require('./routes/login');
 var askImage = require('./routes/askImage');
-
+var label = require('./routes/label');
+var filter = require('./routes/filter');
+var calculate = require('./routes/calculate');
 var app = express();
 
 // view engine setup
@@ -35,6 +37,10 @@ app.use('/users', users);
 app.use('/register', register);
 app.use('/login', login);
 app.use('/askImage', askImage);
+app.use('/label', label);
+app.use('/filter', filter);
+app.use('/calculate', calculate);
+app.use('/Image', express.static(path.join(__dirname,'Image')));
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
