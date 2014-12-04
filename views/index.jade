@@ -1,5 +1,27 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  div(class='following bar')
+    div(class='ui page grid')
+      div(class='column')
+
+  div(class='ui page grid')
+    div(class='column')
+      h1= title
+      p Welcome to #{title}
+      p Powered by SPG
+      h4(class='ui dividing header') Login
+      div(class='ui form')
+        div(class='two fields')
+          div(class='required field')
+            label Username
+          div(class='ui icon input')
+            input(type='text',placeholder='Username')
+            i(class='user icon')
+          div(class='required field')
+            label Password
+          div(class='ui icon input')
+            input(type='password')
+            i(class='lock icon')
+
+
