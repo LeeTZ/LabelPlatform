@@ -10,6 +10,10 @@
         .container{
             padding: 2em 0em 2em;
         }
+        .num{
+            padding-left: 20px;
+            margin-top: 10px;
+        }
 
     </style>
 </head>
@@ -24,13 +28,13 @@
             </div>
             <a class="ui pink ribbon label" >User</a>
 
-            <p style="margin-top: 20px;"><img class="ui avatar image" src="/images/steve.jpg">Xu Wang</p>
+            <p style="margin-top: 20px;"><img class="ui avatar image" src="/images/steve.jpg"><span id="userName">Xu Wang</span></p>
             <a class="ui teal ribbon label">Label Count</a>
-            <p style="margin-top: 10px;">100</p>
+            <p class="num"  id="labelCount">100</p>
             <a class="ui red ribbon label">Check Count</a>
-            <p style="margin-top: 10px;">100</p>
+            <p class="num" id="checkCount">100</p>
             <a class="ui green ribbon label">Upload Count</a>
-            <p style="margin-top: 10px;">0</p>
+            <p class="num" id="uploadCount">0</p>
         </div>
         <div class="ui  divider">
 
@@ -40,15 +44,15 @@
                 statistics
             </div>
             <a class="ui pink ribbon label">Total Pictures</a>
-            <p style="margin-top: 10px;">0</p>
+            <p class="num" id="totalImageCount">0</p>
             <a class="ui blue ribbon label">Labeled</a>
-            <p style="margin-top: 10px;">0</p>
+            <p class="num" id="totalLabelCount">0</p>
             <a class="ui green ribbon label">Checked</a>
-            <p style="margin-top: 10px;">0</p>
+            <p class="num" id="totalCheckCount">0</p>
             <a class="ui teal ribbon label">Undone</a>
-            <p style="margin-top: 10px;">0</p>
+            <p class="num" id="totalUndoneCount">0</p>
             <a class="ui red ribbon label">By Machine</a>
-            <p style="margin-top: 10px;">0</p>
+            <p class="num" id="totalMachineCount">0</p>
 
         </div>
     </div>
@@ -59,40 +63,35 @@
         </div>
         <p>Select the items to check images.</p>
         <div class="ui form" style="padding-bottom: 40px;">
-            <div class="grouped inline fields">
+            <div class="grouped inline fields" id="checkBox">
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="fruit" checked="checked">
+                        <input type="radio" name="fruit" checked="checked" selectValue="-1">
                         <label>All Image</label>
                     </div>
                 </div>
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="fruit">
+                        <input type="radio" name="fruit" selectValue="2">
                         <label>Labeled Image</label>
                     </div>
                 </div>
+
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="fruit">
-                        <label>Sublabeled Image</label>
-                    </div>
-                </div>
-                <div class="field">
-                    <div class="ui radio checkbox">
-                        <input type="radio" name="fruit">
+                        <input type="radio" name="fruit" selectValue="4">
                         <label>Checked</label>
                     </div>
                 </div>
                 <div class="field">
                     <div class="ui radio checkbox">
-                        <input type="radio" name="fruit">
+                        <input type="radio" name="fruit" selectValue="0">
                         <label>Undone</label>
                     </div>
 
                 </div>
                 <div class="field">
-                    <div class="ui radio checkbox">
+                    <div class="ui radio checkbox" selectValue="0">
                         <input type="radio" name="fruit">
                         <label>ByMachine</label>
                     </div>
@@ -101,57 +100,8 @@
             </div>
         </div>
         <div class="grid">
-            <div class="ui five column grid">
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="ui segment">
-                        <img src="../image/large/201411281011150.jpg" class="ui fluid image">
-                    </div>
-                </div>
+            <div class="ui five column grid" id="ImageList">
+
             </div>
 
         </div>
@@ -160,6 +110,118 @@
 </div>
 </div>
 <script>
+    var userId = "547e7f3048a8688c1f403ea6";
+    var labelCount;
+    var checkCount;
+    var uploadCount;
+    var totalPics;
+    var labeledPics;
+    var checkedPics;
+    var undonePics;
+    var byMachinePics;
+    var filterType = -1;/**-1, allImage, 0, LabeledImage 1, SublabeledImage, 2, Checked, 3 Undone, 4, ByMachine.*/
+    var totalRequestNum;
+    var nextRequestNum = 0;
+    var eachCount = 20;
+    (function getUserInfo()
+    {
+        $.ajax({
+            type:'POST',
+            url:'/calculate/user',
+            data:{'userId':userId},
+            success:function(result){
+                console.log(result);
+                if(result.status == 1){
+                    var userInfo = result.msg;
+                    $('#userName').text(userInfo.userName);
+                    $('#labelCount').text(userInfo.labelPointCount);
+                    $('#checkCount').text(userInfo.validateCount);
+                    $('#uploadCount').text(userInfo.createImageCount);
+
+                }
+
+
+            },
+            dataType:'json'
+        });
+
+    })();
+    (function getStatistics(){
+        $.ajax({
+           type:'POST',
+            url:'/calculate/totalImage',
+            success:function(result){
+                console.log(result);
+                if(result.status == 1){
+                    var ImageInfo = result.msg;
+                    $('#totalImageCount').text(ImageInfo.totalCount);
+                    $('#totalLabelCount').text(ImageInfo.labelCount);
+                    $('#totalCheckCount').text(ImageInfo.checkCount);
+                    $('#totalUndoneCount').text(ImageInfo.undoneCount);
+                    $('#totalMachineCount').text(ImageInfo.machineCount);
+
+                }
+
+
+            },
+            dataType:'json'
+        });
+
+    })();
+    function generateOneImage(url)
+    {
+
+        var item = $("<div class=\"column\"><div class=\"ui segment\"><img src=\"\" class=\"ui fluid image\"></div> </div>");
+        item.find('img').attr('src', url);
+        return item;
+    }
+    function getImage()
+    {
+        $.ajax({
+           type:'POST',
+           url:'/filter',
+           data:{'type':filterType, 'num':eachCount, 'skipNum':nextRequestNum},
+           success:function(result){
+               console.log(result);
+
+                if(result.status == 1)
+                {
+                    var imageList = $('#ImageList');
+                    nextRequestNum = nextRequestNum + imageList.length;
+                    for(var item in result.msg){
+                        var imageUrl = result.msg[item].picUrl_l;
+                        var item = generateOneImage(imageUrl);
+                        imageList.append(item);
+                    }
+
+
+
+                }
+
+
+            },
+            dataType:'json'
+        });
+    }
+    getImage();
+    $('.ui.checkbox').checkbox();
+    $(document).scroll(function(){
+       if($(document).scrollTop() >= $(document).height() - $(window).height())
+       {
+            getImage();
+       }
+
+    });
+    $("#checkBox").click(function(){
+        var selectValue = parseInt($('input:checked').attr('selectValue'));
+        nextRequestNum = 0;
+        filterType=selectValue;
+        console.log(selectValue);
+        $('#ImageList').empty();
+        getImage();
+    });
+
+
 
 
 </script>

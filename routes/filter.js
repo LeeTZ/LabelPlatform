@@ -5,7 +5,9 @@ var Pic = mongoose.model('Pic');
 /* GET home page. */
 router.post('/', function(req, res) {
 	var type = req.body.type;
-	Pic.Filter(type, function(status, msg){
+    var num = req.body.num;
+    var skipNum = req.body.skipNum;
+	Pic.Filter(type, num, skipNum, function(status, msg){
 		res.json({'status':status, 'msg':msg});
 	});
 });

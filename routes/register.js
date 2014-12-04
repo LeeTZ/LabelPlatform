@@ -3,21 +3,12 @@ var router = express.Router();
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 /*register */
+
 router.get('/', function(req, res) {
 
-	var registerUser = new User({userName:'ihey', password:'123456', userCreateTime:Date.now(), superuser:false, expired:false});
-	registerUser.Register(function(err, status){
-		console.log(err);
-		console.log(status);
-		if(err){
-			console.log('err');
-			res.send("error happend.");
-		}
-		registerUser.save(function(err){
-			console.log(err);
-			res.send("register.");
-		});
-	})
+    /**
+     * remain to finish.
+     */
 	
 });
 
