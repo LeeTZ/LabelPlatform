@@ -28,7 +28,7 @@ UserSchema.methods.Register = function(callback){
 				if(err){
 					callback(0, "save user error.");
 				}
-				callback(1, "register user success.");
+				callback(1, that);
 			});
 			
 
@@ -123,6 +123,80 @@ UserSchema.statics.Calculate = function(callback){
 	});
 
 }
+
+//
+UserSchema.statics.GetUserInfo = function(userId, callback){
+    var that = this;
+    var query = that.where({'expired':false});
+    this.findById(userId, function(err, user){
+       if(err){
+           callback(0, err);
+            return;
+       }
+       if(!user){
+            callback(0, "user doesn't exist.");
+           return;
+       }
+        var calculate = function(){
+            var userObject = user._doc;
+            user.model('Pic').count({'createUser':user.userName}, function(err, count){
+                if(err){
+                    callback(0, err);
+                    return;
+                }
+                userObject["createImageCount"] = count;
+                user.model('Pic').count({'labelPointUser': user.userName}, function(err, count){
+                    if(err){
+                        callback(0, err);
+                        return;
+                    }
+                    userObject["labelPointCount"] = count;
+                    user.model('Pic').count({'labelShoulderUser':user.userName}, function(err, count){
+                        if(err){
+                            callback(0, err);
+                            return;
+                        }
+                        userObject["labelShoulderCount"] = count;
+                        user.model('Pic').count({'validateUser':user.userName}, function(err, count){
+                            if(err){
+                                callback(0, err);
+                                return;
+                            }
+                            userObject["validateCount"] = count;
+                            user.model('Pic').count({'labelPointUser':user.userName, 'status':4}, function(err, count){
+                                if(err){
+                                    callback(0, err);
+                                    return;
+                                }
+                                userObject['checkCount'] = count;
+                                callback(1, userObject);
+
+                            });
+                            //callback(1, userObject);
+
+
+
+                        });
+
+                    });
+                });
+            })
+        }
+        calculate();
+
+
+
+
+    });
+
+
+
+
+
+
+
+}
+
 mongoose.model('User', UserSchema);
 
 
@@ -144,11 +218,45 @@ var PicSchema = new Schema({
 	labelShoulderTime:{type:Date},
 	validateUser:String,
 	validateTime:{type:Date},
-	status:Number,/*status=0, Unlabeled, status = 1, Distributed, status=2, LabelButNoValidate, status = 3, LabelAndDistrubuted, status = 4, labelAndAccept, status = 5, labelButRejected.*/
+	status:Number,/*status=0, Unlabeled, status = 1, Distributed, status=2, LabelButNoValidate, status = 3, LabelAndDistrubuted, status = 4, labelAndAccept, status = 5, labelButRejected. status = 6, trash, delete.*/
 	expireTime:{type:Date}
 
 });
 
+PicSchema.statics.Trash = function(picId, userId, callback){
+    var that = this;
+    that.findById(picId, function(err, kitten){
+       if(err){
+           callback(0, err);
+           return;
+       }
+        if(kitten){
+            kitten.model('User').findById(userId, function(err, user){
+               if(err){
+                   callback(0, err);
+                   return;
+               }
+               if(user){
+                    kitten.validateUser = user.userName;
+                    kitten.status = 6;
+                   kitten.save(function(err){
+                       if(err){
+                           callback(0, err);
+                           return;
+                       }
+                       callback(1, 'success');
+                   });
+               }
+                else{
+                   callback(0, 'cannot find user.');
+               }
+            });
+        }
+        else{
+            callback(0, 'cannot find image');
+        }
+    });
+}
 PicSchema.statics.AskImage= function(num, expiredtime, callback){
     var dateNow = new Date(Date.now());
     console.log(dateNow);
@@ -245,45 +353,49 @@ PicSchema.statics.AskForValidate = function(num, expiredtime, callback){
                     var Count = imagelist.length;
                     var index = 0;
                     var returnArray = new Array();
+                    if(Count == 0){
+                        callback(1, []);
+                        return;
+                    }
                     var saveAndInsertLabelImage = function(){
-                        var item = imagelist[index];
-                        item.expireTime = time;
-                        console.log(time);
-                        item.status = 3;
-                        var obj = item._doc;
-                                                index ++;
-                        item.save(function(err){
-                            if(err){
-                                callback(0, 'update pic status error.');
-                            }
-                            else{
-                            	item.model("Label").findOne({picId:item.id}, function(err, kitten){
-                        			if(err){
-                        				callback(0, err);
-                        				return;
-                        			}
-                        			if(kitten){
-                        				obj["label"] = kitten._doc;
-                                        returnArray.push(obj);
-                        			}
-                        			if(index < Count)
-                                	{
-                                    	saveAndInsertLabelImage();
-                                	}
-		                            else
-		                            {
-		                                callback(1, returnArray);
-		                            }
-                   						
+                        if(index < Count) {
+                            var item = imagelist[index];
+                            item.expireTime = time;
+                            console.log(time);
+                            item.status = 3;
+                            var obj = item._doc;
+                            index++;
+                            item.save(function (err) {
+                                if (err) {
+                                    callback(0, 'update pic status error.');
+                                }
+                                else {
+                                    item.model("Label").findOne({picId: item.id}, function (err, kitten) {
+                                        if (err) {
+                                            callback(0, err);
+                                            return;
+                                        }
+                                        if (kitten) {
+                                            obj["label"] = kitten._doc;
+                                            returnArray.push(obj);
+                                        }
+                                        if (index < Count) {
+                                            saveAndInsertLabelImage();
+                                        }
+                                        else {
+                                            callback(1, returnArray);
+                                        }
 
-                        	});
 
-                                
-                            }
+                                    });
 
-                        })
 
-                    };
+                                }
+
+                            });
+                        }
+
+                    }
                     saveAndInsertLabelImage();
 
 					
@@ -296,7 +408,7 @@ PicSchema.statics.AskForValidate = function(num, expiredtime, callback){
 	});
 }
 
-PicSchema.statics.Validate = function(picId, username,validated, callback){
+PicSchema.statics.Validate = function(picId, userId,validated, callback){
 	var that = this;
 	this.findById(picId, function(err, kitten){
 		if(err){
@@ -304,38 +416,52 @@ PicSchema.statics.Validate = function(picId, username,validated, callback){
 			return;
 		}
 		if(kitten){
-			var dateNow = new Date(Date.now());
-			if(kitten.expireTime < dateNow){
-				callback(0, "validate time expired.")
-				return;
-			}
-			else
-			{
-				if(validated === true){
-					kitten.status = 4;
-				}
-				else
-				{
-					kitten.status = 5;
-				}
-				kitten.validateUser = username;
-				kitten.validateTime = Date.now();
-				kitten.save(function(err){
-					if(err){
-						callback(0, err);
-						return;
-					}
-					else
-					{
-						callback(1, kitten);
-					}
-				});
-			}
+            kitten.model('User').findById(userId, function(err, user){
+                if(err){
+                    callback(0, err);
+                    return;
+                }
+                if(user){
+                    var dateNow = new Date(Date.now());
+                    if(kitten.expireTime < dateNow){
+                        callback(0, "validate time expired.")
+                        return;
+                    }
+                    else
+                    {
+                        if(validated === true){
+                            kitten.status = 4;
+                        }
+                        else
+                        {
+                            kitten.status = 5;
+                        }
+                        kitten.validateUser = user.userName;
+                        kitten.validateTime = Date.now();
+                        kitten.save(function(err){
+                            if(err){
+                                callback(0, err);
+                                return;
+                            }
+                            else
+                            {
+                                callback(1, kitten);
+                            }
+                        });
+                    }
+
+                }
+                else
+                {
+                    callback(0, 'cannot find user');
+                }
+            });
+
 		}
 	});
 
 }
-PicSchema.statics.Filter= function(type, callback){
+PicSchema.statics.Filter= function(type, count, skipNum, callback){
     var dateNow = new Date(Date.now());
 	var query = this.where({status:1}).where('expireTime').lte(dateNow);
 	//query.setOptions({overwrite:true});
@@ -354,14 +480,25 @@ PicSchema.statics.Filter= function(type, callback){
 				callback(0, err);
 				return;
 			}
-			var queryImage = that.where({status:type});
-			queryImage.exec(function(err, imgList){
+            var queryImage;
+            if(type == -1)
+            {
+                queryImage = that.where({});
+            }
+            else
+            {
+                queryImage = that.where({status:type});
+            }
+
+			queryImage.skip(skipNum).limit(count).exec(function(err, imgList){
+
 			if(err){
 				callback(0, err);
 				return;
 			}
 			if(type< 2){
 				callback(1, imgList);
+                return;
 			}
 			else
 			{
@@ -407,6 +544,57 @@ PicSchema.statics.Filter= function(type, callback){
 		
 
 	});
+
+}
+PicSchema.statics.Statistics = function(callback){
+   var that = this;
+   var result = {};
+   that.count({}, function(err, count) {
+       if(err)
+       {
+           callback(0, err);
+           return;
+       }
+       else
+       {
+           result['totalCount'] = count;
+           that.count({status:2}, function(err, count){
+              if(err){
+                  callback(0, err);
+                  return;
+              }
+              else
+              {
+                  result["labelCount"] = count;
+                  that.count({status:4}, function(err, count){
+                     if(err){
+                         callback(0, err);
+                         return;
+                     }
+                     else
+                     {
+                         result["checkCount"] = count;
+                         that.count({status:0}, function(err, count){
+                             if(err){
+                                 callback(0, err);
+                             }
+                             else
+                             {
+                                 result["undoneCount"] = count;
+                                 callback(1, result);
+                             }
+                         })
+
+                     }
+                  });
+              }
+           });
+
+       }
+
+   });
+
+
 
 }
 var Pic = mongoose.model('Pic', PicSchema);

@@ -3,7 +3,7 @@ var router = express.Router();
 var mongoose = require('mongoose');
 var Label = mongoose.model('Pic');
 /* GET home page. */
-router.get('/', function(req, res) {
+router.post('/', function(req, res) {
 	var num = req.query.num;
     if(num==undefined)
     {
@@ -12,7 +12,7 @@ router.get('/', function(req, res) {
 	var expiredtime = req.query.expiredtime;
     if(expiredtime== undefined)
     {
-        expiredtime = 1;
+        expiredtime = 5;
     }
 	Label.AskImage(num, expiredtime, function(status, msg){
 		res.json({'status':status, 'msg':msg});

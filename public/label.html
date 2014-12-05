@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/semantic.min.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/semantic.min.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <title>Data Labeling Platform</title>
+  </head>
+  
+  <body>
+    <div class="ui page grid">
+      <div class="column">
+        <div class="ui large gray inverted pointing menu">
+            <div class="container">
+                <div class="title item">
+                    <b>Data Labeling Platform</b>
+                </div>
+                <a class="item" href="dashboard.html">
+                    <i class="home icon"></i> Home
+                </a>
+                <a class="active item" href="label.html">
+                    <i class="write icon"></i> Label
+                </a>
+                <a class="item" href="check.html">
+                    <i class="check circle icon"></i> Check
+                </a>
+                <a class="item" href="overview.html" id="overview">
+                    <i class="unhide icon"></i> Overview
+                </a>
+                <div class="right menu">
+                    <a class="ui item" id="logout">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui page grid">
+      <div class="column">
+        <div class="row">
+          <div class="ui left labeled icon button" id="previous">
+            <i class="left arrow icon"></i>
+            Previous
+          </div>
+          <div class="ui large image" >
+            <img src="images/steve.jpg" id="labelImage">
+          </div>
+          <div class="ui right labeled icon button" id="next">
+            <i class="right arrow icon"></i>
+            Next
+          </div>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+          <div class="ui left labeled icon green button">
+            <i class="checkmark icon"></i>
+            Confirm
+          </div>
+          <div class="ui left labeled icon orange button">
+            <i class="ban icon"></i>
+            Reset
+          </div>
+          <div class="ui left labeled icon button" id="trash">
+            <i class="trash icon"></i>
+            Trash
+          </div>
+        </div>
+      </div>
+    </div>
+  <script>
+      var imageArray = new Array();
+      var currentIndex = 0;
+      var noImage = false;
+      function drawImage(){
+          var image = imageArray[currentIndex];
+          $('#labelImage').attr('src', image.picUrl_l);
+          if(image.label !== undefined || image.label === null){
+              //
+              //
+
+          }
+
+      }
+      function getImageArray(callback)
+      {
+          $.ajax({
+            type:'POST',
+            url:'/askImage',
+            data:{},
+            dataType:'json',
+            success:function(result){
+                console.log(result);
+                if(result.status == 1){
+                    if(result.msg.length == 0){
+                        alert("最后一张了");
+                        noImage = true;
+                        return;
+                    }
+                    for(var item in result.msg){
+                        imageArray.push(result.msg[item]);
+                    }
+                    callback();
+
+                }
+            }
+          });
+      }
+
+      function previous(){
+        if(currentIndex < 0){
+            alert("您已经到达第一张。");
+        }
+        else{
+            currentIndex --;
+            drawImage();
+
+        }
+
+      }
+      function next(){
+          if(currentIndex >= imageArray.length){
+              getImageArray(function(){
+                  if(noImage === false) {
+                      currentIndex++;
+                      drawImage();
+                  }
+
+
+              });
+          }
+          currentIndex ++;
+          drawImage();
+
+      }
+      getImageArray(function(){
+          drawImage();
+      });
+      $('#previous').click(function(){
+          previous();
+      });
+      $('#next').click(function(){
+         next();
+      });
+      function confirm(){
+
+      }
+      function Reset(){
+          imageArray[currentIndex].label = null;
+      }
+      function trash(){
+          $.ajax({
+              url:'/validate/trash',
+              data:{'picId':imageArray[currentIndex]._id, 'userId': $.cookie('userId')},
+              type:'POST',
+              dataType:'json',
+              success:function(result){
+                  console.log(result);
+                  imageArray.splice(currentIndex, 1);
+                  if(imageArray.length <= currentIndex){
+                      getImageArray(function(){
+                          drawImage();
+                      });
+                  }
+                  else{
+                      drawImage();
+                  }
+
+
+
+              }
+
+          });
+      }
+      $('#trash').click(function(){
+          trash();
+      });
+
+
+
+
+
+  </script>
+    <script src="js/logout.js"></script>
+  </body>
+</html>

@@ -7,6 +7,8 @@ router.post('/', function(req, res){
 	var _password = req.body.password;
 	var user = new User({userName:_userName, password:_password});
 	user.Login(function(status, msg){
+
+
 		res.json({'status':status, 'msg':msg});
 	
 

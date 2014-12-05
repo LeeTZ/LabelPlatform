@@ -8,7 +8,7 @@
 
     <style>
         .container{
-            padding: 2em 0em 2em;
+            padding: 2em 7em;
         }
         .num{
             padding-left: 20px;
@@ -18,7 +18,38 @@
     </style>
 </head>
 <body>
-<div class="container">
+<div>
+    <div class="ui page grid">
+<div class="column">
+    <div class="ui large gray inverted pointing menu">
+        <div class="container">
+            <div class="title item">
+                <b>Data Labeling Platform</b>
+            </div>
+            <a class="item" href="dashboard.html">
+                <i class="home icon"></i> Home
+            </a>
+            <a class="item" href="label.html">
+                <i class="write icon"></i> Label
+            </a>
+            <a class="item" href="check.html">
+                <i class="check circle icon"></i> Check
+            </a>
+            <a class="active item" href="overview.html" id="overview">
+                <i class="unhide icon"></i> Overview
+            </a>
+            <div class="right menu">
+                <a class="ui item" id="logout">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+    </div>
+
+<div class="ui page container">
 <div class="ui two column divided grid">
     <div class="three wide column">
 
@@ -107,8 +138,11 @@
         </div>
 
     </div>
+    </div>
+
 </div>
 </div>
+
 <script>
     var userId = "547e7f3048a8688c1f403ea6";
     var labelCount;
@@ -128,7 +162,7 @@
         $.ajax({
             type:'POST',
             url:'/calculate/user',
-            data:{'userId':userId},
+            data:{'userId': userId},
             success:function(result){
                 console.log(result);
                 if(result.status == 1){
@@ -225,6 +259,6 @@
 
 
 </script>
-
+<script src="js/logout.js"></script>
 </body>
 </html>
