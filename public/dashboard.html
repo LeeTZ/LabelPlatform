@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/semantic.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="js/semantic.min.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
@@ -13,124 +14,132 @@
     <div class="ui page grid">
       <div class="column">
         <div class="ui large gray inverted pointing menu">
-            <div class="container">
-                <div class="title item">
-                    <b>Data Labeling Platform</b>
-                </div>
-                <a class="active item" href="dashboard.html">
-                    <i class="home icon"></i> Home
-                </a>
-                <a class="item" href="label.html">
-                    <i class="write icon"></i> Label
-                </a>
-                <a class="item" href="check.html">
-                    <i class="check circle icon"></i> Check
-                </a>
-                <a class="item" href="overview.html" id="overview">
-                    <i class="unhide icon"></i> Overview
-                </a>
-                <div class="right menu">
-                    <a class="ui item" id="logout">
-                        Logout
-                    </a>
-                </div>
+          <div class="container">
+            <div class="title item">
+              <b>Data Labeling Platform</b>
             </div>
+            <a class="active item" href="dashboard.html">
+              <i class="home icon"></i> Home
+            </a>
+            <a class="item" href="label.html">
+              <i class="write icon"></i> Label
+            </a>
+            <a class="item" href="check.html">
+              <i class="check circle icon"></i> Check
+            </a>
+            <a class="item" href="overview.html" id="overview">
+              <i class="unhide icon"></i> Overview
+            </a>
+            <div class="right menu">
+              <a class="ui item" id="logout">
+                Logout
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     
     <div class="ui page grid">
-      <div class="column">
-        <div class="ui card">
-          <div class="image">
-            <img src="images/steve.jpg">
+      <div class="row">
+        <div class="six wide column">
+          <div class="ui card">
+            <div class="content">
+              <div class="header" id="userName">Username</div>
+              <!--<div class="meta">
+                <a class="group">litiezheng513@gmail.com</a>
+              </div>-->
+              <div class="ui divided list">
+                <div class="item">
+                  <div class="right floated compact ui label" id="labelCount">202</div>
+                  <i class="large write icon"></i>
+                  <div class="content">
+                    <b>Label</b>
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="right floated compact ui orange label" id="vakudateCount">292</div>
+                  <i class="large check circle icon"></i>
+                  <div class="content">
+                    <b>Check</b>
+                  </div>
+                </div>
+                <div class="item" id="uploadpanel">
+                  <div class="right floated compact teal ui label" id="uploadCount">120</div>
+                  <i class="large cloud upload icon"></i>
+                  <div class="content">
+                    <b>Upload</b>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="extra content">
+              <a class="right floated created">
+                Joined in <span id="createTime"> Sep,2014</span>
+              </a>
+              <a class="friends">
+                <i class="user icon"></i>
+                <span id="isSuper">User</span>
+              </a>
+            </div>
           </div>
-          <div class="content">
-            <div class="header" id="userName">Username</div>
-            <!--<div class="meta">
-              <a class="group">litiezheng513@gmail.com</a>
-            </div>-->
-            <div class="ui divided list">
-              <div class="item">
-                <div class="right floated compact ui label" id="labelCount">202</div>
-                <i class="large write icon"></i> 
+        </div>
+        <div class="ten wide column">
+          <div class="ui segment">
+            <a class="ui massive blue ribbon label">Choose a task</a>
+            <div class="ui large very relaxed animated list">
+              <div class="large item">
+                <i class="big write icon"></i>
                 <div class="content">
-                  <b>I have labeled</b>
+                  <a class="header" href="label.html">Label pictures</a>
+                  <a href="label.html" class="description">Mark the shoulder of a person by marking <b>six points</b> in the picture, namely left shoulder edge, left mid-shoulder, left neck, right neck, right mid-shoulder, right shoulder edge.</a>
                 </div>
               </div>
-              <div class="item">
-                <div class="right floated compact green ui label" id="validateCount">202</div>
-                <i class="large thumbs up icon"></i> 
+              <div class="large item">
+                <i class="big check circle icon"></i>
                 <div class="content">
-                  <b>My label validated</b>
-                </div>
-              </div>
-              <div class="item">
-                <div class="right floated compact ui orange label" id="checkCount">292</div>
-                <i class="large check circle icon"></i> 
-                <div class="content">
-                  <b>I have checked</b>
-                </div>
-              </div>
-              <div class="item">
-                <div class="right floated compact teal ui label" id="uploadCount">120</div>
-                <i class="large cloud upload icon"></i> 
-                <div class="content">
-                  <b>I have uploaded</b>
+                  <a class="header" href="check.html">Check pictures</a>
+                  <a href="label.html" class="description">Check the correctiveness of other users' label work by clicking on <b>Accept</b> or <b>Reject</b>.</as>
                 </div>
               </div>
             </div>
           </div>
-          <div class="extra content">
-            <a class="right floated created">
-              Joined in <span id="createTime"> Sep,2014</span>
-            </a>
-            <a class="friends">
-              <i class="user icon"></i>
-              <span id="isSuper">User</span>
-            </a>
-          </div>
         </div>
       </div>
     </div>
-  <script>
-      (function getUserInfo()
-      {
-          $.ajax({
-              type:'POST',
-              url:'/calculate/user',
-              data:{'userId': $.cookie("userId")},
-              success:function(result){
-                  console.log(result);
-                  if(result.status == 1){
-                      var userInfo = result.msg;
-                      $('#userName').text(userInfo.userName);
-                      $('#labelCount').text(userInfo.labelPointCount);
-                      $('#validateCount').text(userInfo.validateCount);
-                      $('#uploadCount').text(userInfo.createImageCount);
-                      $('#checkCount').text(userInfo.checkCount);
-                      if(userInfo.superuser === true)
-                      {
-                           $('#isSuper').text('Admin');
-                      }
-                      else
-                      {
-                          $('#isSuper').text('User');
-                      }
-                      var createTime = new Date(userInfo.userCreateTime);
-                      var createTimeStr = createTime.toDateString();
-                      $("#createTime").text(createTimeStr);
-
-                  }
-
-
-              },
-
-              dataType:'json'
-          });
-
-      })();
-  </script>
+    <script>
+    (function getUserInfo()
+    {
+    $.ajax({
+    type:'POST',
+    url:'/calculate/user',
+    data:{'userId': $.cookie("userId")},
+    success:function(result){
+    console.log(result);
+    if(result.status == 1){
+    var userInfo = result.msg;
+    $('#userName').text(userInfo.userName);
+    $('#labelCount').text(userInfo.labelPointCount);
+    $('#validateCount').text(userInfo.validateCount);
+    $('#uploadCount').text(userInfo.createImageCount);
+    $('#checkCount').text(userInfo.checkCount);
+    if(userInfo.superuser === true)
+    {
+    $('#isSuper').text('Admin');
+    }
+    else
+    {
+    $('#isSuper').text('User');
+    }
+    var createTime = new Date(userInfo.userCreateTime);
+    var createTimeStr = createTime.toDateString();
+    $("#createTime").text(createTimeStr);
+    }
+    },
+    dataType:'json'
+    });
+    })();
+    </script>
     <script src="js/logout.js"></script>
   </body>
 </html>

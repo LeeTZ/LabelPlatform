@@ -30,8 +30,6 @@ UserSchema.methods.Register = function(callback){
 				}
 				callback(1, that);
 			});
-			
-
 		}
 	});
 }
@@ -92,17 +90,25 @@ UserSchema.statics.Calculate = function(callback){
 								return;
 							}
 							userObject["labelShoulderCount"] = count;
-							user.model('Pic').count({'validateUser':user.userName}, function(err, count){
+
+							user.model('Pic').count({'validateUser':user.username}, function(err, count){
 								if(err){
 									callback(0, err);
 									return;
 								}
-								userObject["validateCount"] = count;
-                                index ++;
-                                userArray.push(userObject);
-                                calculate();
-							});
+								userObject["checkCount"] = count;
 
+                                user.model('Pic').count({'validateUser':{$ne:null}, 'labelPointUser':user.username}, function(err, count){
+                                    if(err){
+                                        callback(0, err);
+                                        return;
+                                    }
+                                    userObject["validateCount"] = count;
+                                    index ++;
+                                    userArray.push(userObject);
+                                    calculate();
+							});
+                            });
 						});
 					});
 				});
@@ -325,31 +331,31 @@ PicSchema.statics.AskImage= function(num, expiredtime, callback){
 }
 
 PicSchema.statics.AskForValidate = function(num, expiredtime, callback){
-	var dateNow = new Date(Date.now());
+    var dateNow = new Date(Date.now());
     console.log(dateNow);
-	var query = this.where({status:3}).where('expireTime').lte(dateNow);
-	//query.setOptions({overwrite:true});
+    var query = this.where({status:3}).where('expireTime').lte(dateNow);
+    //query.setOptions({overwrite:true});
     var that = this;
     /*query.exec(function(err, list){
-       console.log(list.length);
-    });*/
-	this.update(query,{status:2}, {multi:true},function(err, result){
-		if(err){
-			callback(0, 'update query error.');
-		
-		}
-		else{
-			that.where({status:2}).limit(num).exec(function(err, imagelist){
+     console.log(list.length);
+     });*/
+    this.update(query,{status:2}, {multi:true},function(err, result){
+        if(err){
+            callback(0, 'update query error.');
 
-				if(err){
-					console.log(err);
-					callback(0, 'select image error.');
+        }
+        else{
+            that.where({status:2}).limit(num).exec(function(err, imagelist){
 
-				}
-				else
-				{
-					var time = new Date(Date.now());
-					time.setMinutes(time.getMinutes() + expiredtime);
+                if(err){
+                    console.log(err);
+                    callback(0, 'select image error.');
+
+                }
+                else
+                {
+                    var time = new Date(Date.now());
+                    time.setMinutes(time.getMinutes() + expiredtime);
                     var Count = imagelist.length;
                     var index = 0;
                     var returnArray = new Array();
@@ -398,14 +404,14 @@ PicSchema.statics.AskForValidate = function(num, expiredtime, callback){
                     }
                     saveAndInsertLabelImage();
 
-					
-				}
 
-			});
-		}
+                }
+
+            });
+        }
 
 
-	});
+    });
 }
 
 PicSchema.statics.Validate = function(picId, userId,validated, callback){
@@ -537,11 +543,8 @@ PicSchema.statics.Filter= function(type, count, skipNum, callback){
 
 			}
 
-
 		});
-
 		});
-		
 
 	});
 
@@ -589,14 +592,10 @@ PicSchema.statics.Statistics = function(callback){
                   });
               }
            });
-
        }
-
    });
-
-
-
 }
+
 var Pic = mongoose.model('Pic', PicSchema);
 var ResultSchema = new Schema({
 	expId:String,
@@ -613,10 +612,24 @@ var ErrorSchema = new Schema({
 var Error = mongoose.model('Error', ErrorSchema);
 var ExpSchema = new Schema({
 	expTime:{type:Date},
-	picNum:Number,
+    picNum:Number,
 	epochs:Number,
 	learningRate:Number,
-	minLearningRate:Number
+	minLearningRate:Number,
+    weightDecayFactor:Number,
+    momentum:Number,
+    batchsize:Number,
+    initialAverageLoss:Number,
+    decayFactor:Number,
+    dae:Number,
+    weightSaveThreshold:Number,
+    distortion:Boolean,
+    distortionPerEpoch:Number,
+    severityFactor:Number,
+    maximumScaling:Number,
+    maximumRotation:Number,
+    elasticSigma:Number,
+    elasticScaling:Number
 	//remain to compeleted.
 
 });
@@ -649,7 +662,7 @@ var LabelSchema = new Schema({
 LabelSchema.methods.LabelPicture = function(callback){
 	var that = this;
 	that.model('Pic').findById(that.picId, function(err, picture){
-		if(err){
+        if(err){
 			callback(0, err);
 			return;
 		}
@@ -676,15 +689,18 @@ LabelSchema.methods.LabelPicture = function(callback){
                             break;
                         }
                     }
+                    console.log(picture);
                     if (isContainAllKeys) {
                         for (var type in keys) {
                             label[keys[type]] = that[keys[type]];
                         }
                         picture.labelPointUser = that["labeler"];
                         picture.labelPointTime = Date.now();
-
-
                     }
+                    console.log(label);
+                    console.log(isContainAllKeys);
+                    picture.labelPointUser = that["labeler"];
+                    picture.labelPointTime = Date.now();
                     if (that['position'] !== undefined) {
                         label['position'] = that['position'];
                         picture.labelPosUser = that["labeler"];
@@ -696,6 +712,7 @@ LabelSchema.methods.LabelPicture = function(callback){
                         picture.labelShoulderTime = Date.now();
                     }
                     label['valid'] = true;
+                    picture.status = 2;
                     label.save(function (err, label) {
                         if (err) {
                             callback(0, err);
@@ -737,6 +754,7 @@ LabelSchema.methods.LabelPicture = function(callback){
 
 
                     }
+                    picture.status = 2;
                     if (that['position'] !== undefined) {
                         label['position'] = that['position'];
                         picture.labelPosUser = that["labeler"];

@@ -16,6 +16,7 @@ router.post('/', function(req, res) {
     }
 	Label.AskImage(num, expiredtime, function(status, msg){
 		res.json({'status':status, 'msg':msg});
+        console.log(msg);
 	})
 });
 

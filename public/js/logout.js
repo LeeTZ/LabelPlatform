@@ -7,6 +7,7 @@ function logout(){
 $(document).ready(function() {
     if ($.cookie('isSuper') === "false") {
         $('#overview').hide();
+        $('#uploadpanel').hide();
     }
 });
 $('#logout').click(function(){

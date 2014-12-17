@@ -3,9 +3,11 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/semantic.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/semantic.min.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
+    <script src="http://d3js.org/d3.v3.js"></script>
     <title>Data Labeling Platform</title>
   </head>
   
@@ -41,26 +43,24 @@
     <div class="ui page grid">
       <div class="column">
         <div class="row">
-          <div class="ui left labeled icon button" id="previous">
-            <i class="left arrow icon"></i>
-            Previous
-          </div>
-          <div class="ui large image" >
-            <img src="images/steve.jpg" id="labelImage">
-          </div>
-          <div class="ui right labeled icon button" id="next">
-            <i class="right arrow icon"></i>
-            Next
-          </div>
+          
+          <svg id="mainpic" width="400" height="400">
+            <image width="400" height="400" xlink:href="images/load.gif" src="images/load.gif" id="labelImage">
+          </svg>
+          
         </div>
         <br>
         <br>
-        <div class="row">
-          <div class="ui left labeled icon green button">
+        <div class="row" id="buttons">
+        <!--div class="ui left labeled icon button" id="previous">
+            <i class="left arrow icon"></i>
+            Previous
+          </div-->
+          <div class="ui left labeled icon green button" id="confirm">
             <i class="checkmark icon"></i>
             Confirm
           </div>
-          <div class="ui left labeled icon orange button">
+          <div class="ui left labeled icon orange button" id="clear">
             <i class="ban icon"></i>
             Reset
           </div>
@@ -68,6 +68,34 @@
             <i class="trash icon"></i>
             Trash
           </div>
+          <!--div class="ui right labeled icon button" id="next">
+            <i class="right arrow icon"></i>
+            Next
+          </div-->
+        </div>
+        <div class="ui negative message" style="display:none;" id="msg_wrongorder">
+          <i class="close icon" onclick="$('#msg_wrongorder').fadeOut('normal');"></i>
+          <div class="header">
+              The order of your label is wrong!
+          </div>
+          <p> You should label from <b>left to right</b>, sequencely, by marking left edge of shoulder, left middle shoulder, left neck, right neck, right middle shoulder and right edge of shoulder. Please check. 
+        </p>
+        </div>
+        <div class="ui negative message" style="display:none;" id="msg_notfinish">
+          <i class="close icon" onclick="$('#msg_notfinish').fadeOut('normal');" ></i>
+          <div class="header">
+              You haven't finish labeling this picture yet!
+          </div>
+          <p> You should label <b>six points</b> from left to right, sequencely, by marking left edge of shoulder, left middle shoulder, left neck, right neck, right middle shoulder and right edge of shoulder. Please check. 
+        </p>
+        </div>
+        <div class="ui positive message" style="display:none;" id="msg_noimage">
+          <i class="close icon" onclick="$('#msg_noimage').fadeOut('normal');"></i>
+          <div class="header">
+              You have finish labeling task!
+          </div>
+          <p> There is no unlabeled images by now. You may take a rest. 
+        </p>
         </div>
       </div>
     </div>
@@ -75,9 +103,12 @@
       var imageArray = new Array();
       var currentIndex = 0;
       var noImage = false;
+      var image;
       function drawImage(){
-          var image = imageArray[currentIndex];
-          $('#labelImage').attr('src', image.picUrl_l);
+          image = imageArray[currentIndex];
+          //$('#labelImage').attr('src', image.picUrl_l);
+          $('#labelImage').attr('xlink:href', image.picUrl_l);
+          
           if(image.label !== undefined || image.label === null){
               //
               //
@@ -96,12 +127,16 @@
                 console.log(result);
                 if(result.status == 1){
                     if(result.msg.length == 0){
-                        alert("最后一张了");
+                        //alert("No images available to label by now");
                         noImage = true;
+                        $('#labelImage').attr('xlink:href', 'images/steve.jpg');
+                        $('#msg_noimage').show();
                         return;
                     }
                     for(var item in result.msg){
                         imageArray.push(result.msg[item]);
+                        imageArray[imageArray.length - 1].totalcnt = 0;
+                        imageArray[imageArray.length - 1].label = [];   
                     }
                     callback();
 
@@ -111,25 +146,22 @@
       }
 
       function previous(){
-        if(currentIndex < 0){
+        if(currentIndex <= 0){
             alert("您已经到达第一张。");
         }
         else{
             currentIndex --;
             drawImage();
-
         }
 
       }
       function next(){
-          if(currentIndex >= imageArray.length){
+          if(currentIndex >= imageArray.length - 1){
               getImageArray(function(){
                   if(noImage === false) {
                       currentIndex++;
                       drawImage();
                   }
-
-
               });
           }
           currentIndex ++;
@@ -145,12 +177,40 @@
       $('#next').click(function(){
          next();
       });
-      function confirm(){
+      function clearcircles(){
+          image.label = [];
+          image.totalcnt = 0;
+          d3.select("svg").selectAll("circle").remove();  
 
       }
-      function Reset(){
-          imageArray[currentIndex].label = null;
+      $('#clear').click(function(){
+         clearcircles();
+      });
+      function confirm(){
+          if (image.totalcnt < 6){
+            $('#msg_notfinish').show();
+            return;
+          }
+          var datatosend = {};
+          var datatoconvert = imageArray[currentIndex].label;
+          $.ajax({
+            url:'/label',
+            type:'POST',
+            dataType:'json',
+            data:{'picId':imageArray[currentIndex]._id,'user': $.cookie('username'),'leftShoulderX':datatoconvert[0][0],'leftShoulderY':datatoconvert[0][1],'leftMiddleShoulderX':datatoconvert[1][0],'leftMiddleShoulderY':datatoconvert[1][1],'leftNeckX':datatoconvert[2][0],'leftNeckY':datatoconvert[2][1],'rightNeckX':datatoconvert[3][0],'rightNeckY':datatoconvert[3][1],'rightMiddleShoulderX':datatoconvert[4][0],'rightMiddleShoulderY':datatoconvert[4][1],'rightShoulderX':datatoconvert[5][0],'rightShoulderY':datatoconvert[5][1],'position':true,'shoulderType':true},
+            success:function(result){
+                console.log(result);
+                clearcircles();
+                next();
+            }
+          });
       }
+
+      $('#confirm').click(function(){
+         confirm();
+      });
+
+
       function trash(){
           $.ajax({
               url:'/validate/trash',
@@ -159,6 +219,7 @@
               dataType:'json',
               success:function(result){
                   console.log(result);
+                  clearcircles();
                   imageArray.splice(currentIndex, 1);
                   if(imageArray.length <= currentIndex){
                       getImageArray(function(){
@@ -176,8 +237,62 @@
           });
       }
       $('#trash').click(function(){
+
           trash();
       });
+
+      var svg = document.querySelector('svg');
+      // Create an SVGPoint for future math
+      var pt = svg.createSVGPoint();
+
+      // Get point in global SVG space
+      function cursorPoint(evt){
+        pt.x = evt.clientX; pt.y = evt.clientY;
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+      }
+      
+      var svgElement = document.getElementById("mainpic");
+      svgElement.addEventListener("mousedown",function(evt){
+      var loc = cursorPoint(evt);
+      //loc.x loc.y for coordinate
+
+      // just for next
+      if (image.totalcnt == 6){
+        //confirm();  
+        return;       
+      }
+
+      // check if it is legal
+
+      var lastx;
+      if (image.totalcnt > 0){
+        lastx = Math.round(image.label[image.label.length - 1][0] * 400);
+      }
+      if (parseInt(loc.x) < lastx){
+        $('#msg_wrongorder').show();
+        return;
+      }
+
+      //if it is legal messagebox fadeout
+      $('#msg_wrongorder').fadeOut("normal");
+      $('#msg_notfinish').fadeOut("normal");
+      // store it in front-end
+      image = imageArray[currentIndex];
+      image.label.push([(parseFloat(loc.x)/400.0),(parseFloat(loc.y)/400.0)]);
+
+      // draw a point
+      var circle = d3.select("svg").append("circle")
+                          .attr("cx", loc.x)
+                          .attr("cy", loc.y)
+                          .attr("r", 4)
+                          .attr("fill","red")
+                          .attr("stroke","blue")
+                          .attr("stroke-width",1);
+      
+      //count total num
+      image.totalcnt++;
+      
+      },false);
 
 
 

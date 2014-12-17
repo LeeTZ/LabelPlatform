@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/semantic.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/semantic.min.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <title>Data Labeling Platform</title>
+  </head>
+  
+  <body>
+    <div class="ui page grid">
+      <div class="column">
+        <div class="ui large gray inverted pointing menu">
+            <div class="container">
+                <div class="title item">
+                    <b>Data Labeling Platform</b>
+                </div>
+                <a class="item" href="dashboard.html">
+                    <i class="home icon"></i> Home
+                </a>
+                <a class="item" href="label.html">
+                    <i class="write icon"></i> Label
+                </a>
+                <a class="item" href="check.html">
+                    <i class="check circle icon"></i> Check
+                </a>
+                <a class="item" href="overview.html" id="overview">
+                    <i class="unhide icon"></i> Overview
+                </a>
+                <a class="active item" href="management.html" id="manage">
+                    <i class="users icon"></i> Manage
+                </a>
+                <div class="right menu">
+                    <a class="ui item" id="logout">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui page grid">
+      <div class="column">
+          <h2>User Management</h2>
+          <table class="ui sortable defination table">
+            <thead>
+              <tr>
+                <th>
+                  Username
+                </th>
+                <th>
+                  Label
+                </th>
+                <th>
+                  Check
+                </th>
+                <th>
+                  JoinTime
+                </th>
+                <th>
+                  Password
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            </tbody>
+          </table>
+      </div>
+    </div>
+  <script src="js/logout.js"></script>
+  </body>
+</html>

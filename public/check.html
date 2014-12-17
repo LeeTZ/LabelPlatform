@@ -3,10 +3,11 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/semantic.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/semantic.min.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
-
+    <script src="http://d3js.org/d3.v3.js"></script>
     <title>Data Labeling Platform</title>
   </head>
   
@@ -41,30 +42,30 @@
     </div>
     <div class="ui page grid">
       <div class="column">
-        <div class="row">
-          <div class="ui left labeled icon button" id="previous">
-            <i class="left arrow icon"></i>
-            Previous
-          </div>
-          <div class="ui large image">
-            <img src="images/steve.jpg">
-          </div>
-          <div class="ui right labeled icon button" id="next">
-            <i class="right arrow icon"></i>
-            Next
-          </div>
+        <div class="row"> 
+          <svg id="mainpic" width="400" height="400">
+            <image width="400" height="400" xlink:href="images/load.gif" src="images/load.gif" id="labelImage">
+          </svg>
         </div>
         <br>
         <br>
-        <div class="row">
-          <div class="ui left labeled icon green button">
+        <div class="row" id="checkbuttons">
+          <div class="ui large left labeled icon green button" id="accept">
             <i class="checkmark icon"></i>
             Accept
           </div>
-          <div class="ui left labeled icon orange button">
+          <div class="ui large left labeled icon orange button" id="reject">
             <i class="ban icon"></i>
             Reject
           </div>
+        </div>
+        <div class="ui positive message" style="display:none;" id="msg_noimage">
+          <i class="close icon" onclick="$('#msg_noimage').fadeOut('normal');"></i>
+          <div class="header">
+              You have finish labeling task!
+          </div>
+          <p> There is no unlabeled images by now. You may take a rest. 
+        </p>
         </div>
       </div>
     </div>
@@ -72,15 +73,36 @@
       var imageArray = new Array();
       var currentIndex = 0;
       var noImage = false;
+      function drawPoint(x,y){
+        rx = Math.round(x * 400);
+        ry = Math.round(y * 400);
+        var circle = d3.select("svg").append("circle")
+                          .attr("cx", rx)
+                          .attr("cy", ry)
+                          .attr("r", 4)
+                          .attr("fill","red")
+                          .attr("stroke","blue")
+                          .attr("stroke-width",1);
+      }
+      function clearcircles(){
+          d3.select("svg").selectAll("circle").remove();  
+      }
+
       function drawImage(){
           var image = imageArray[currentIndex];
-          $('#labelImage').attr('src', image.picUrl_l);
+          //$('#labelImage').attr('src', image.picUrl_l);
+          $('#labelImage').attr('xlink:href', image.picUrl_l);
+          console.log(image);
           if(image.label !== undefined || image.label === null){
               //
-              //
-
           }
-
+          drawPoint(image.label.leftShoulderX,image.label.leftShoulderY);
+          drawPoint(image.label.leftMiddleShoulderX,image.label.leftMiddleShoulderY);
+          drawPoint(image.label.leftNeckX,image.label.leftNeckY);
+          drawPoint(image.label.rightMiddleShoulderX,image.label.rightMiddleShoulderY);
+          drawPoint(image.label.rightShoulderX,image.label.rightShoulderY);
+          drawPoint(image.label.rightNeckX,image.label.rightNeckY);
+          
       }
       function getImageArray(callback)
       {
@@ -93,13 +115,15 @@
                   console.log(result);
                   if(result.status == 1){
                       if(result.msg.length == 0){
-                          alert("最后一张了");
                           noImage = true;
+                          $('#labelImage').attr('xlink:href', 'images/steve.jpg');
+                          $('#msg_noimage').show();
                           return;
                       }
                       for(var item in result.msg){
                           imageArray.push(result.msg[item]);
                       }
+                      console.log(imageArray);
                       callback();
 
                   }
@@ -119,14 +143,12 @@
 
       }
       function next(){
-          if(currentIndex >= imageArray.length){
+          if(currentIndex >= imageArray.length - 1){
               getImageArray(function(){
                   if(noImage === false) {
                       currentIndex++;
                       drawImage();
                   }
-
-
               });
           }
           currentIndex ++;
@@ -166,7 +188,16 @@
           });
 
       }
-
+      $('#accept').click(function(){
+          confirm();
+          clearcircles();
+          next();
+      });
+      $('#reject').click(function(){
+          Reject();
+          clearcircles();
+          next();
+      });
 
 
   </script>

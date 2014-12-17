@@ -1,8 +1,23 @@
 // attach ready event
+function showlogin(){
+            $("#register").hide();
+            $("#login").show();
+        }
+function showregister(){
+            $("#login").hide();
+            $("#register").show();
+}
+
 
 validateForm = {};
 
 validateForm.ready = function() {
+
+$('.ui.accordion')
+  .accordion()
+;
+
+
 
 $('.ui.form')
   .form({
@@ -23,8 +38,8 @@ $('.ui.form')
           prompt : 'Please enter a password'
         },
         {
-          type   : 'length[6]',
-          prompt : 'Your password must be at least 6 characters'
+          type   : 'length[2]',
+          prompt : 'Your password must be at least 2 characters'
         }
       ]
     }
@@ -47,7 +62,9 @@ $('.ui.form')
                         else
                         {
                             $.cookie("userId", result.msg._id);
+                            $.cookie("username",username);
                             $.cookie("isSuper", result.msg.superuser);
+
                             var url = $(location)[0].origin + "/dashboard.html";
                             window.location = url;
                         }
@@ -60,7 +77,7 @@ $('.ui.form')
         }
         else if(form==="register"){
             $.ajax({
-                    type:'POST',
+                    type:'POST',  
                     url:'/register',
                     data:{'userName':username, 'password':password},
                     success:function(result){
@@ -70,6 +87,7 @@ $('.ui.form')
                         else
                         {
                             $.cookie("userId", result.msg._id);
+                            $.cookie("username",username);
                             $.cookie("isSuper", result.msg.superuser);
                             var url = $(location)[0].origin + "/dashboard.html";
                             window.location = url;
