@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="css/semantic.min.css">
+		<link rel="stylesheet" href="css/style.css">
+		<script type="text/javascript" src="js/jquery.min.js"></script>
+		<script type="text/javascript" src="js/semantic.min.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script src="http://d3js.org/d3.v3.js"></script>
+		<title>Data Labeling Platform</title>
+	</head>
+	
+	<body>
+		<div class="ui page grid">
+			<div class="column">
+				<div class="ui large gray inverted pointing menu">
+					<div class="container">
+						<div class="title item">
+							<b>Data Labeling Platform</b>
+						</div>
+						<a class="item" href="dashboard.html">
+							<i class="home icon"></i> Home
+						</a>
+						<a class="active item" href="tutorial.html">
+							<i class="help circle icon"></i> Tutorial
+						</a>
+						<a class="item" href="label.html">
+							<i class="write icon"></i> Label
+						</a>
+						<a class="item" href="check.html">
+							<i class="check circle icon"></i> Check
+						</a>
+						<a class="item" href="overview.html" id="overview">
+							<i class="unhide icon"></i> Overview
+						</a>
+						<div class="right menu">
+							<a class="ui item" id="logout">
+								Logout
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui page grid">
+			<div class="column">
+				<div class="row">
+					<h2 class="ui divding header">
+					Welcome!
+					</h2>
+					<div class="ui info message">
+						<div class="header">What is this?</div>
+						<p>
+						Welcome to Data Labling Platform. Now you are going to finish a label task for <b>Fashion Room</b>. This is a project using state-of-the-art deep learning technique, your work is greatly needed and appreciated to help us train our model better!
+						</p>
+						<p>
+						You shall find the shoulders of models. Label from <b>left to right</b>, sequencely, by marking <code>left edge of shoulder, left middle shoulder, left neck, right neck, right middle shoulder and right edge of shoulder</code>.
+						</p>
+						<p>
+						Here are some examples:
+						</p>
+					</div>
+					<div class="ui three column grid">
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/right2.PNG">
+								</div>
+								<div class="content">
+									<div class="header">A clear shoulder</div>
+									<div class="description">
+										Remember to label from <code>left to right</code>. Use your mouse, click on the picture and set up label points.
+									</div>
+								</div>
+								<div class="ui green bottom attached button">
+									<i class="checkmark icon"></i>
+									Good Label
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/right3.PNG">
+								</div>
+								<div class="content">
+									<div class="header">Hand on shoulder</div>
+									<div class="description">
+										Here we should estimate the position of <code>left middle shoulder</code>.
+									</div>
+								</div>
+								<div class="ui green bottom attached button">
+									<i class="checkmark icon"></i>
+									Good Label
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/right4.PNG">
+								</div>
+								<div class="content">
+									<div class="header">Long Hair</div>
+									<div class="description">
+										Still we are finding the real shoulder (you may imagine the model is 'naked') A more precise estimation is required.
+									</div>
+								</div>
+								<div class="ui green bottom attached button">
+									<i class="checkmark icon"></i>
+									Good Label
+								</div>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+				<br>
+				<div class="row">
+					<div class="ui positive message">
+						<div class="header">Notice： Some triky tasks</div>
+						<p>
+						Models with winter clothes(fur collar, overcoat or scraf) is really hard to label.
+						</p>
+						<p>
+						You shall find the <code>real shoulders </code>of models. Here are some examples:
+						</p>
+					</div>
+					<div class="ui three column grid">
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/winter1.PNG">
+								</div>
+								<div class="content">
+									<div class="header">Winter coat</div>
+								</div>
+								<div class="ui green bottom attached button">
+									<i class="checkmark icon"></i>
+									Good Label
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/winter2.PNG">
+								</div>
+								<div class="content">
+									<div class="header">Winter coat</div>
+								</div>
+								<div class="ui green bottom attached button">
+									<i class="checkmark icon"></i>
+									Good Label
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/winter3.PNG">
+								</div>
+								<div class="content">
+									<div class="header">Winter coat</div>
+								</div>
+								<div class="ui green bottom attached button">
+									<i class="checkmark icon"></i>
+									Good Label
+								</div>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+				<br>
+				<div class="row">
+					<div class="ui positive message">
+						<div class="header"> Trash pictures</div>
+						<p>
+						Also, we are sorry that the quality of some pictures are not so good. Please help us identify them by click the <code>'trash'</code> button while your labling
+						<p>
+						Here are some examples:
+						</p>
+					</div>
+					<div class="ui three column grid">
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/trash1.jpg">
+								</div>
+								<div class="content">
+									<div class="header">Back towards you</div>
+									<div class="description">
+										Do not label when the model turns her back to you.
+									</div>
+								</div>
+								<div class="ui gray bottom attached button">
+									<i class="trash icon"></i>
+									Trash
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/trash4.PNG">
+								</div>
+								<div class="content">
+									<div class="header">Sideways</div>
+									<div class="description">
+										Do not label when you cannot see both sides of the shoulder.
+									</div>
+								</div>
+								<div class="ui gray bottom attached button">
+									<i class="trash icon"></i>
+									Trash
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="ui card">
+								<div class="image">
+									<img src="images/trash3.jpg">
+								</div>
+								<div class="content">
+									<div class="header">Multiple models</div>
+									<div class="description">
+										Do not label when there are more than one model in the picture.
+									</div>
+								</div>
+								<div class="ui gray bottom attached button">
+									<i class="trash icon"></i>
+									Trash
+								</div>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+				<br>
+				<br>
+				<div class="row">
+					<div class="ui big green fluid button">
+						<i class="big write icon"></i>
+						     Start Labeling!
+					</div>
+				</div>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+			</div>
+		</div>
+		</script>
+		<script src="js/logout.js"></script>
+	</body>
+</html>

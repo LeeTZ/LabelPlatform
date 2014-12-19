@@ -6,6 +6,17 @@ h1{
 h6{
 	text-align: center;
 }
+code {
+background-color: rgba(0, 0, 0, 0.02);
+box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+display: inline-block;
+font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+font-size: 12px;
+font-weight: bold;
+margin: 0 2px 0px 0px;
+padding: 2px 4px;
+vertical-align: baseline;
+}
 
 #login{
 	width: 400px;
