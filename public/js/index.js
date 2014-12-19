@@ -17,6 +17,12 @@ $('.ui.accordion')
   .accordion()
 ;
 
+$('.ui.segment')
+  .popup()
+;
+$('.ui.header')
+  .popup()
+;
 
 
 $('.ui.form')

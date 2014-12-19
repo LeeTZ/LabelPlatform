@@ -275,7 +275,6 @@ PicSchema.statics.AskImage= function(num, expiredtime, callback){
 	this.update(query,{status:0}, {multi:true},function(err, result){
 		if(err){
 			callback(0, 'update query error.');
-		
 		}
 		else{
 			that.where({status:0}).limit(num).exec(function(err, imagelist){
@@ -435,12 +434,24 @@ PicSchema.statics.Validate = function(picId, userId,validated, callback){
                     }
                     else
                     {
-                        if(validated === true){
+                        if(validated == "true"){
                             kitten.status = 4;
                         }
                         else
                         {
-                            kitten.status = 5;
+                            //kitten.status = 5;  Go back to label
+                            kitten.status = 0;
+                            // delete the label yi jue hou huan
+                            that.model('Label').remove({picId: picId}, function (err, kitten) {
+                                if (err) {
+                                    callback(0, err);
+                                    return;
+                                }
+                                if (kitten) {
+
+                                }
+
+                            });
                         }
                         kitten.validateUser = user.userName;
                         kitten.validateTime = Date.now();
@@ -493,7 +504,12 @@ PicSchema.statics.Filter= function(type, count, skipNum, callback){
             }
             else
             {
-                queryImage = that.where({status:type});
+                if (type == 2){
+                    queryImage = that.where({$or:[{status:2},{status:3}]});
+                }else{
+                    queryImage = that.where({status:type});
+                }
+
             }
 
 			queryImage.skip(skipNum).limit(count).exec(function(err, imgList){
@@ -502,7 +518,7 @@ PicSchema.statics.Filter= function(type, count, skipNum, callback){
 				callback(0, err);
 				return;
 			}
-			if(type< 2){
+			if(type< 2 || type == 6){
 				callback(1, imgList);
                 return;
 			}
