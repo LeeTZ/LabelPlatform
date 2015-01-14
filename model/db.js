@@ -675,6 +675,24 @@ var LabelSchema = new Schema({
 	valid:Boolean
 });
 
+var FaceSchema = new Schema({
+    picId:String,
+    leftEyeX:Number,
+    leftEyeY:Number,
+    rightEyeX:Number,
+    rightEyeY:Number,
+    noseX:Number,
+    noseY:Number,
+    leftMouthX:Number,
+    leftMouthY:Number,
+    RightMouthX:Number,
+    RightMouthY:Number,
+    ChinX:Number,
+    ChinY:Number
+});
+var Face = mongoose.model('Face', FaceSchema);
+
+
 LabelSchema.methods.LabelPicture = function(callback){
 	var that = this;
 	that.model('Pic').findById(that.picId, function(err, picture){
